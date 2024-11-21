@@ -1,0 +1,15 @@
+version: '2.3'
+
+services:
+  airflow: 
+    build: .  # Dockerfile 위치 
+    container_name: airflow-dags-container
+    ports: 
+      - '8080:8080'
+    volumes:  # 호스트에서 dags 폴더 안에 dag를 정의한 파일을 생성하면 => 컨테이너에서도 실시간 확인 가능 
+      - ./dags:/usr/local/airflow/dags
+    command: >
+      bash -c "airflow webserver --port 8080 & airflow scheduler"
+
+  # ci/cd
+# 이미지를 다시 빌드하고 => 번잡한 과정 필요없이 볼륨 마운트를 시켜두시면 로컬에서 작업한 결과물을 컨테이너에서도 확인 가능
