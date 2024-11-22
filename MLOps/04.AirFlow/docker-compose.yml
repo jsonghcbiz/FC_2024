@@ -3,13 +3,40 @@ version: '2.3'
 services:
   airflow: 
     build: .  # Dockerfile 위치 
-    container_name: airflow-dags-container
+    container_name: airflow-dags-container  # 컨테이너 이름 변경
     ports: 
-      - '8080:8080'
+      - '8080:8080'  # 호스트의 8080 포트와 컨테이너의 8080 포트를 맵핑 (localhost:8080)
     volumes:  # 호스트에서 dags 폴더 안에 dag를 정의한 파일을 생성하면 => 컨테이너에서도 실시간 확인 가능 
-      - ./dags:/usr/local/airflow/dags
+      - ./dags:/opt/airflow/dags  # 컨테이너 dags 폴더와 로컬 dags 폴더 연동
+      - ./logs:/opt/airflow/logs # 컨테이너 logs 폴더와 로컬 logs 폴더 연동
+    environment:
+      - AIRFLOW_HOME=/opt/airflow # Airflow 홈 디렉터리 설정
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False # 예제 dag 로드 여부 설정
     command: >
-      bash -c "airflow webserver --port 8080 & airflow scheduler"
+      bash -c "airflow db init &&
+               airflow webserver --port 8080 & 
+               airflow scheduler"
 
-  # ci/cd
-# 이미지를 다시 빌드하고 => 번잡한 과정 필요없이 볼륨 마운트를 시켜두시면 로컬에서 작업한 결과물을 컨테이너에서도 확인 가능
+
+  mlflow:
+    image: mlflow/mlflow:latest # 공식 MLflow 이미지 사용
+    container_name: mlflow-server-container
+    ports:
+      - "5000:5000" # MLflow Tracking UI
+    volumes:
+      - ./mlflow/logs:/opt/mlflow/logs
+      - ./mlflow/artifacts:/opt/mlflow/artifacts
+      - ./mlflow/mlflow.db:/opt/mlflow/mlflow.db
+    environment:
+      - MLFLOW_TRACKING_URI=http://0.0.0.0:5000
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///opt/mlflow/mlflow.db
+      - MLFLOW_ARTIFACT_ROOT=/opt/mlflow/artifacts
+    
+
+
+## mkdir dags logs mlflow 디렉토리 만들고
+### 터미널에 명령어 입력  > docker-compose up --build
+### airflow 접속  > http://localhost:8080/
+### mlflow 접속  > http://localhost:5000/
+
+
