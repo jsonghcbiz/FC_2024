@@ -4,7 +4,7 @@ from airflow.utils.dates import days_ago
 import os
 
 os.environ['NO_PROXY'] = '*' # mac에서 airflow로 외부 요청할 때 이슈가 있음. 하여 해당 코드 추가 필요
-# https://hooks.slack.com/services/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
+
 dag = DAG(
     dag_id="slack_test",
     start_date=days_ago(1),
