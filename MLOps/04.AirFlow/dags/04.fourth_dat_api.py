@@ -7,7 +7,7 @@ from airflow.operators.python import PythonOperator
 # API 요청 -> 데이터 수집 -> 작업
 import os
 
-os.environ["NO_PROXY"] = "*"
+os.environ["NO_PROXY"] = "*"   # log가 찍히지 않는 문제 해결
 
 def fetch_weather_data(**context): 
     API_KEY = 'e8833daf3081187c1de5174a1e113363'
