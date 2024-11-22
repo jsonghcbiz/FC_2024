@@ -1,6 +1,6 @@
 from airflow import DAG
 from datetime import datetime
-from airflow.operators.bash_operator import BashOperator
+from airflow.operators.bash import BashOperator
 
 args = {
     'start_date': datetime(2024, 11, 21),

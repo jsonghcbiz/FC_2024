@@ -7,6 +7,7 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from airflow.operators.python import PythonOperator
 
 # ML 파이프라인 
 ## (1) 데이터 준비   ** context로 데이터 전달할 경우, json 형태로 전달해야 함. 
@@ -30,16 +31,15 @@ def train_model(**context):
     ti = context['ti']
 
     X_train = pd.read_json(ti.xcom_pull(key='X_train'))
-    y_train = pd.read_json(ti.xcom_pull(key='y_train', type='series'))
+    y_train = pd.read_json(ti.xcom_pull(key='y_train', typ='series'))
     
     rf_clf = RandomForestClassifier(
         n_estimators=100,
-        random_state=123
-    )
+        random_state=123)
     rf_clf.fit(X_train, y_train)
 
     model_path = '/tmp/random_forest_model.pkl'    # tmp로 만들었다가, 다 사용하면 나중에 삭제 
-    joblib.dump(rf_clf, model_path)
+    joblib.dump(rf_clf, model_path)  # 모델 저장. dump: 모델을 파일로 저장
 
     context['ti'].xcom_push(key='model_path', value=model_path)
     
@@ -51,7 +51,7 @@ def evaluate_model(**context):
     model = joblib.load(model_path)    
 
     X_test = pd.read_json(ti.xcom_pull(key='X_test'))
-    y_test = pd.read_json(ti.xcom_pull(key='y_test', type='series'))
+    y_test = pd.read_json(ti.xcom_pull(key='y_test', typ='series'))
 
     predict = model.predict(X_test)
     print(f'predictions: {predict}')
@@ -68,3 +68,30 @@ dag = DAG(
     schedule_interval='@daily', 
     catchup=False
 )
+
+prepare_data_task1 = PythonOperator(
+    task_id='prepare_data',
+    python_callable=prepare_data,
+    provide_context=True,
+    dag=dag
+)
+train_model_task2 = PythonOperator(
+    task_id='train_model',
+    python_callable=train_model,
+    provide_context=True,
+    dag=dag
+)
+evalutate_model_task3 = PythonOperator(
+    task_id='evaluate_model',
+    python_callable=evaluate_model,
+    provide_context=True,
+    dag=dag
+)
+
+prepare_data_task1 >> train_model_task2 >> evalutate_model_task3
+
+
+# docker exec -it airflow-dags-container /bin/bash
+# pip install mlflow==2.16.2
+# pip install scikit-learn
+# - 파이썬이 설치되어 있으니깐
