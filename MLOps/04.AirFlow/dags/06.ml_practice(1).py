@@ -1,5 +1,6 @@
 import pandas as pd
 import joblib
+from datetime import datetime
 
 from airflow import DAG
 from sklearn.datasets import load_iris
@@ -59,6 +60,12 @@ def evaluate_model(**context):
     print(f'Model accuracy: {accuracy}')
 
 
-
-
 ## (4) DAG 정의
+dag = DAG(
+    'iris_ml_pipeline_single_model',
+    default_args=default_args,
+    description='A simple ML pipeline with RandomForestClassifier',
+    start_date=datetime(2024, 11, 22),
+    schedule_interval='@daily', 
+    catchup=False
+)
