@@ -63,7 +63,6 @@ def evaluate_model(**context):
 ## (4) DAG 정의
 dag = DAG(
     'iris_ml_pipeline_single_model',
-    default_args=default_args,
     description='A simple ML pipeline with RandomForestClassifier',
     start_date=datetime(2024, 11, 22),
     schedule_interval='@daily', 
