@@ -21,13 +21,13 @@ task1 = BashOperator(
 )
 
 task2 = BashOperator(
-    task_id='print_sleep',
+    task_id='print_task1',
     bash_command='echo "Hello, World - Task2"',
     dag=dag
 )
 
 task3 = BashOperator(
-    task_id='print_hello',
+    task_id='print_task2',
     bash_command='echo "Hello, World - Task3"',
     dag=dag
 )
@@ -35,4 +35,11 @@ task3 = BashOperator(
 
 # 의존성 설정 (실행 순서)
 task1 >> [task2, task3]
+
+
+# task1이 끝나면 task2, task3를 병렬로 실행
+
+# Make => Airflow
+
+# 다음 => API 데이터 요청 => 처리 => 모델 학습 => 모델 배포 => 모델 평가 => 모델 저장 
 

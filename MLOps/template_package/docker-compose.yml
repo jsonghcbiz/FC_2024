@@ -2,7 +2,7 @@ version: '2.3'
 
 services:
   airflow: 
-    build: .  # Dockerfile 위치 
+    build: .   # Dockerfile 위치 
     container_name: airflow-dags-container  # 컨테이너 이름 변경
     ports: 
       - '8080:8080'  # 호스트의 8080 포트와 컨테이너의 8080 포트를 맵핑 (localhost:8080)

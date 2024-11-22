@@ -4,17 +4,34 @@ import logging
 import json
 from datetime import datetime
 from airflow.operators.python import PythonOperator
-# API 요청 -> 데이터 수집 -> 작업
 import os
+# API 요청 -> 데이터 수집 -> 작업
 
+# # mac에서 contaier를 띄운 다음 airflow에서 외부로 fetch 요청을 할 때 발생하는 이슈 => log가 찍히지 않고 계속 runnning 상태
 os.environ["NO_PROXY"] = "*"   # log가 찍히지 않는 문제 해결
 
+default_args = {
+    'owner': 'admin',
+    'start_date': datetime(2024, 9, 22),
+    'retries': 1,
+}
+
+API_KEY = 'e8833daf3081187c1de5174a1e113363'
+
 def fetch_weather_data(**context): 
-    API_KEY = 'e8833daf3081187c1de5174a1e113363'
+    logging.info("Fetching weather data from OpenWeather API...")
     REQUEST_URL = f'https://api.openweathermap.org/data/2.5/weather?lat=37.5172&lon=127.0473&appid={API_KEY}'
-
-    response = requests.get(REQUEST_URL, timeout=5)
-
+    try: 
+        response = requests.get(REQUEST_URL, timeout=5)
+        response.raise_for_status()
+        logging.info(f"Weather data fetched successfully: {response.json()}")
+        context['ti'].xcom_push(key='weather_data', value=response.json())
+    except requests.exceptions.Timeout:
+        logging.error("Request timed out")
+        raise
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Request failed: {e}")
+        raise
     context['ti'].xcom_push(key='weather_data', value=response.json())
 
 
