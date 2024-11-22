@@ -1,6 +1,12 @@
 # FC_2024
 Practice codes used for FC Bootcamp
 
+# 라이브러리 관리 팁 
+- requirements.txt가 나중에 발생할 수 있는 라이브러리 의존성을 해결할 수 있음 
+- poetry 사용 시 라이브러리 버전 관리 용이
+
+---
+
 ## MLflow
 (1) 가상환경 구축
 > python3.10 -m venv .venv
@@ -103,39 +109,129 @@ Practice codes used for FC Bootcamp
 
 3. 도커 이미지 빌드
 > docker build -t airflow-image .
+- -t '이름' => 이미지 이름 설정
 
 4. 도커 컨테이너 실행
 > docker run --name airflow-container -d -p 8080:8080 airflow-image
 - > -d => 컨테이너 백그라운드 실행
 - > -p 8080:8080 => 호스트의 8080포트와 컨테이너의 8080포트를 맵핑
+- > --name '이름' => 컨테이너 이름 설정
+- > airflow-image => 앞에서 설정한 이미지 이름
 
-### (2) 컨테이너 접속 후 어드민 계정 생성
-1. 컨테이너 접속
+5. 컨테이너 접속 후 어드민 계정 생성
 > docker exec -it airflow-container /bin/bash
-    - it: interacive terminal (가상터미널)
+   - it: interacive terminal (가상터미널)
+   - airflow-container => 컨테이너 이름
+   - /bin/bash => 쉘 실행
 
-2. 어드민 계정 생성 명령어 실행
-> airflow users create --username admin --firstname inseop --lastname kim --role Admin --email inseop@gmail.com --password 123
+6. 어드민 계정 생성 명령어 실행
+> airflow users create --username admin --firstname jensong --lastname song --role Admin --email jsong.hcbiz@gmail.com --password 1234
 또는
-> airflow users create
---username jesong
---firstname jenn
---lastname song
---role Admin
---email jsong.hcbiz@gmail.com
+> airflow users create \
+--username jesong \
+--firstname jenn \
+--lastname song \
+--role Admin \
+--email jsong.hcbiz@gmail.com \
 --password 1234
 
 ### (3) Docker Compose 사용
-1. docker-compose.yml 파일 생성
+1. VScode에서 docker-compose.yml 파일 생성
 
-2. docker-compose 정의
+2. docker-compose.yml 파일 정의
 
 3. docker-compose 실행
 > docker compose up --build
+- docker compose: docker-compose.yml 파일을 사용하여 컨테이너 실행
+- up: 컨테이너 실행
+- --build: 이미지 빌드
 
 4. docker-compose 컨테이너 접속 후 어드민 생성
+- > docker exec -it airflow-dags-container /bin/bash
+- > airflow users create --username admin --firstname jensong --lastname song --role Admin --email jsong.hcbiz@gmail.com --password 1234
+
+---
+
+## ML 파이프라인 구축 
+
+
+---
 
 ### Q&A
 
 - Q.docker compose down 하면 백그라운드도 같이 down되나요?
     - down 명령어는 컨테이너를 중지 및 삭제하는 것이 포함되어 있음
+
+docker build 할때 dockerfile 에 airflow admin 계정 생성 명령어까지 포함시켜두면 매번 새로 빌드할때 기본으로 관리자 계정이 만들어지게 할 수도 있는건가요?
+
+- 네!
+
+docker 구동중인 컴퓨터를 끌 때는 stop 했다 추후 다시 start 하면 컨테이너를 유지할 수 있고, 또는 변경된 컨테이너를 새로 이미지로 저장 후 불러와 사용할수 있다는듯한데, 실제로는 어떤 방식이 더 자주 사용되나요?
+
+- 실제로는 컴퓨터를 안끄죠 => EC2, GCP 서버를 호스팅해서 올릴테니깐요!
+- EC2 => docker설치한 다음 pull (private docker container하면 => 로그인한다음 (credential) => 개인계정에 등록된 cotainer를 pull 받을 수 있음)
+
+### Q.
+
+방금 기존 파일 수정하다가 놓친 거 같은데, DAG 에서 sklearn 의 모듈이 없다는 거 어떻게 해결하셨나요 ?
+
+> docker exec -it airflow-dags-container /bin/bash
+
+- 터미널 접속
+
+> pip install scikit-learn
+
+- 파이썬이 설치되어 있으니깐
+
+## Q&A
+
+### Q.docker compose down 하면 백그라운드도 같이 down되나요?
+
+- down 명령어는 컨테이너를 중지 및 삭제하는 것이 포함되어 있습니다.
+
+### Q.Docker build 후 순서가 어떻게 되나요? Compose yml파일 가지고 compose up 한 뒤에 컨테이너 런 하는게 맞을까요? Compose 안하고 run 한 경우엔 그냥 나갔다가 다시 compose 하고 하면 되는거죠?
+
+- docker-compose up --build
+- docker-compose down
+
+docker 만으로는 했을 때는 한계가 많았기 때문에
+docker-compose 명령어
+
+### Q.저도 기존 dags 들만 드고 새로 만든건 안보입니다
+
+- 시간이 걸립니다.. (20분)
+
+### Q.
+
+Mlflow/ wandb
+Airflow/ Make => GPT
+이런 식으로 대응되는 느낌이군요, 전자들로도 기능은 충분한데 후자들이 아무래도 좀 더 편리한 부분도 있는것 같아요.
+
+- make로 유저들이 사용하고 있는 서비스있어? => 10번 중에 1번은 꼭 문제가 생깁니다.
+- 성공여부 실패한 사람들 다시 보내고.
+
+### Q.
+
+그렇군요, wandb는 그래도 연구쪽에서 많이 쓴다고 들었는데, 저도 n8n 시도해봤을때 생각보다 애매하게 에러도 많고 기능도 좀 그랬었는데 노코드 툴 자체는 심화해 사용하기 좀 그런가 보네요. => MVP 툴
+
+- n8n
+- 개인이 간단한 자동화
+
+### Q.
+
+알려주신대로 Docker 재시작 및 파일 밖에 뺐다 다시 넣었는데도 아직 등록이 안되네요 ㅠ 생각보다 오래걸리는군요
+
+- 기다려보셔야 할 것 같아요.
+- 오늘 저녁에라도 연락주시면 줌켜서 방법을 알려드리겠씁니다! :)
+
+### Q.
+
+airflow에 올라올때 active가 아니라 paused로 올라옵니다.
+
+- 트리거를 주시면 됩니다.
+
+## Recommend
+
+- slack => 명령어 => 트리거 돌아가면서 => 모델 파일을 슬랙으로 넘겨주고, 배포 완료 되었습니다 (정확도 몇% 향상되었습니다)
+- mlflow => 벤치마크 툴 => 리퀘스트 테스트 진행 (docker, 로컬에서도 해보고.) => 기록으로 남겨서 면접볼 때 활용
+- 200페이지 설계문서 => AB180

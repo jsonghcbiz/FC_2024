@@ -1,0 +1,7 @@
+apache-airflow==2.7.1
+apache-airflow-providers-slack
+mlflow==2.9.2
+fastapi==0.109.2
+pandas
+psycopg2-binary
+python-dotenvs
