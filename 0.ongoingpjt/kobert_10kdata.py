@@ -349,7 +349,7 @@ def slack_notification(evaluation_result, model_path, data_path, preprocess_time
 * MLFlow 정보 *
 - 실행 경로: {mlflow.get_artifact_uri()}
     """
-    slack_webhook_url = 'https://hooks.slack.com/services/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'
+    slack_webhook_url = '**'
     payload = {
         'color': '#00FF00',
         'text': message,
