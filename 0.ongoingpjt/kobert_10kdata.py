@@ -55,7 +55,13 @@ from kobert_tokenizer import KoBERTTokenizer
 # 환경 변수 설정
 os.environ['NO_PROXY'] = '*'                                    # 환경 변수 설정 airflow로 외부 요청할 때 이슈가 있음. 하여 해당 코드 추가 필요
 plt.rcParams['font.family'] = 'NanumGothic'                     # 폰트 설정
-timestamp = datetime.now().strftime('%Y%m%d_%H%M')
+
+
+# 한국 시간 설정
+def get_kst_time():
+    kst = pytz.timezone('Asia/Seoul')
+    return datetime.now(kst).strftime('%Y-%m-%d %H:%M')
+timestamp = get_kst_time()
 
 # 경로 설정
 current_path = os.getcwd()
@@ -79,11 +85,7 @@ mlflow.set_experiment('IMDB_Kobert_10kdata')
 ############### ------------------------------코드 작성 ----------------------------- ###############
 #-------------------------------------------------------------------------------------------------#
 
-# 한국 시간 설정
-def get_kst_time():
-    kst = pytz.timezone('Asia/Seoul')
-    return datetime.now(kst).strftime('%Y-%m-%d %H:%M')
-timestamp = get_kst_time()
+
 
 # 토크나이저 로드
 def load_tokenizer():
@@ -323,7 +325,7 @@ def train_eval_model(dataset_labeled):
 
 
 ##### 슬랙 알림 함수 #####
-def slack_notification(evaluation_result, model_path, data_path, preprocess_time):
+def slack_notification(evaluation_result, model_path, data_path, sample_size, preprocess_time):
     message = f"""
 * Dataset 정보 *
 - 데이터 경로: {os.path.basename(data_path)}
@@ -366,4 +368,4 @@ if __name__ == "__main__":
     dataset = data_load(sample_size)
     dataset_labeled, label2id, preprocess_time = data_preprocess(dataset)
     model, model_path, model_name, evaluation_result = train_eval_model(dataset_labeled)
-    slack_notification(evaluation_result, model_path, data_path, preprocess_time)    
+    slack_notification(evaluation_result, model_path, data_path, sample_size, preprocess_time)    
