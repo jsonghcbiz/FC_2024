@@ -1,51 +1,68 @@
-# 라이브러리 설정
-import os
-import pandas as pd
-import numpy as np
-import requests
-from datetime import datetime
-from datasets import load_dataset, Dataset, load_from_disk, DatasetDict
-import re
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.model_selection import KFold, train_test_split
-import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
-import seaborn as sns
-# mlflow 라이브러리
-import mlflow
-import mlflow.pytorch
-from mlflow.tracking import MlflowClient  # mlflow 서버 접속
-from wordcloud import WordCloud
-from collections import Counter
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer, PorterStemmer
-# 모델 관련 라이브러리
-import evaluate
-from evaluate import load
-import torch
-import torch.nn.functional as F
-from torch.nn import CrossEntropyLoss
-from torch.utils.data import DataLoader
-# from tensorflow.keras.preprocessing.sequence import pad_sequences
-# from tensorflow.keras.preprocessing.text import Tokenizer
-import joblib
+##### ------------------------------라이브러리 설정------------------------------ #####   
+# 기본 라이브러리
+import os                           # 시스템 경로 설정
+import pandas as pd                 # 기본 데이터 처리
+import numpy as np                  # 숫자 처리
+import time                         # 시간 설정
+import pytz                         # 시간대 설정
+from datetime import datetime       # 시간 설정
+import requests                     # 외부 요청
+
+# 데이터 처리
+from datasets import Dataset,  DatasetDict                          # 데이터 처리
+from sklearn.feature_extraction.text import CountVectorizer         # 벡터 처리
+from sklearn.model_selection import KFold, train_test_split         # 데이터 분할
+import matplotlib.pyplot as plt                                     # 시각화 처리
+import matplotlib.font_manager as fm                                # 폰트 설정
+import seaborn as sns                                               # 시각화 처리
+
+# MLflow 라이브러리
+import mlflow                                   # mlflow 설정
+import mlflow.pytorch                           # mlflow 설정. pytorch 모델 저장
+from mlflow.tracking import MlflowClient        # mlflow 서버 접속
+
+# 자연어 처리
+from wordcloud import WordCloud                                 # 워드 클라우드 처리
+from collections import Counter                                 # 카운터 처리
+import re                                                       # 정규 표현식 처리
+import nltk                                                     # 자연어 처리
+from nltk.tokenize import word_tokenize                         # 토큰화 처리
+from nltk.corpus import stopwords                               # 불용어 처리
+from nltk.stem import WordNetLemmatizer, PorterStemmer          # 표제어 처리
+
+# 평가 지표 처리
+import evaluate                                               # 평가 지표 처리 (예: accuracy, recall, precision, f1-score, etc.)
+from evaluate import load                                     # load: 평가 지표 로드
+
+# 텐서 처리
+import torch                                                            # 텐서 처리
+import torch.nn.functional as F                                         # 텐서 처리. F: 텐서 함수 처리
+from torch.nn import CrossEntropyLoss                                   # 텐서 처리. CrossEntropyLoss: 교차 엔트로피 손실 함수
+from torch.utils.data import DataLoader                                 # 텐서 처리. DataLoader: 데이터 로더
+
+import joblib                                                           # 모델 저장. joblib: 모델 저장 라이브러리
+
 # transformers 라이브러리
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AdamW, Trainer, TrainingArguments, pipeline
+
+
+# from tensorflow.keras.preprocessing.sequence import pad_sequences     # 텐서 처리. pad_sequences: 시퀀스 패딩 처리
+# from tensorflow.keras.preprocessing.text import Tokenizer             # 텐서 처리. Tokenizer: 텍스트 토크나이저
+
 # # airflow 라이브러리
 # from airflow import DAG
 # from airflow.operators.python import PythonOperator
 # from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
-# ----------------------------------------------------------------
-# 환경 변수 설정
-os.environ['NO_PROXY'] = '*'  # airflow로 외부 요청할 때 이슈가 있음. 하여 해당 코드 추가 필요
-# 폰트 설정
-plt.rcParams['font.family'] = 'NanumGothic'
-# 현재 경로 설정
-current_path = os.getcwd()
-# nltk 데이터 경로 설정
-nltk_data_path = os.path.join(current_path, 'nltk_data')
+
+
+##### ------------------------------기본 환경 설정------------------------------ #####   
+
+os.environ['NO_PROXY'] = '*'                                    # 환경 변수 설정 airflow로 외부 요청할 때 이슈가 있음. 하여 해당 코드 추가 필요
+plt.rcParams['font.family'] = 'NanumGothic'                     # 폰트 설정
+# 
+current_path = os.getcwd()                                      # 현재 경로 설정
+nltk_data_path = os.path.join(current_path, 'nltk_data')       # nltk 데이터 경로 설정
+
 nltk.data.path.append(nltk_data_path)
 try:
     nltk.download('punkt', download_dir=nltk_data_path)
@@ -83,9 +100,15 @@ default_args = {
         'PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION': 'python'   # 파이썬 버전 이슈 해결
     }
 }
+def get_kst_time():
+    kst = pytz.timezone('Asia/Seoul')
+    return datetime.now(kst).strftime('%Y-%m-%d %H:%M')
+timestamp = get_kst_time()
+
 def load_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
     return tokenizer
+
 def compute_accuracy(predictions):
     predict = np.argmax(predictions.predictions, axis=1)
     accuracy = evaluate.load('accuracy')
@@ -324,7 +347,7 @@ def slack_notification(evaluation_result, model_name, data_path):
   - Predict Accuracy: {evaluation_result['predict_accuracy']:.4f}
 • Training Duration: {evaluation_result['eval_runtime']:.2f} seconds
     """
-    slack_webhook_url = '**'
+    slack_webhook_url = 'https://hooks.slack.com/services/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'
     payload = {
         'text': message
     }
