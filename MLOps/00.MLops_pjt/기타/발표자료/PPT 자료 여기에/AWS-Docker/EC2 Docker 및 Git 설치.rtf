@@ -1,0 +1,80 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2820
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue-Bold;\f1\fnil\fcharset0 HelveticaNeue;\f2\fnil\fcharset129 AppleSDGothicNeo-Regular;
+}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab560
+\pard\pardeftab560\partightenfactor0
+
+\f0\b\fs40 \cf0 AWS-Docker\
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\f1\b0\fs26 \cf0 \
+1.\uc0\u54644 \u45817  \u54840 \u49828 \u53944 \u51032  \u51060 \u51204  \u53412 \u47484  \u49325 \u51228 \u54633 \u45768 \u45796 .\
+ssh-keygen -R {\field{\*\fldinst{HYPERLINK "http://ec2-3-36-5-184.ap-northeast-2.compute.amazonaws.com"}}{\fldrslt ec2-3-36-5-184.ap-northeast-2.compute.amazonaws.com}}\
+\
+2./Users/jinhochoi/.ssh/known_hosts \uc0\u54028 \u51068 \u50640 \u49436  \u51060 \u51204  \u53412 \u47484  \u49325 \u51228 \u54633 \u45768 \u45796 .\
+nano /Users/jinhochoi/.ssh/known_hosts\
+\
+3.\uc0\u49352  \u54840 \u49828 \u53944 \u53412  \u52628 \u44032 \
+ssh -i "fastcampus_ml_2_key_pair.pem" ec2-user@ec2-3-36-5-184.ap-northeast-2.compute.amazonaws.com
+\f0\b \
+\
+Docker \uc0\u49444 \u52824 \
+\
+
+\f1\b0 1.
+\f0\b \uc0\u49884 \u49828 \u53596  \u50629 \u45936 \u51060 \u53944 
+\f1\b0 :\
+sudo yum update -y\
+\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+
+\f0\b \cf0 2.Docker \uc0\u49444 \u52824 
+\f1\b0 :\uc0\u8232 sudo amazon-linux-extras enable docker\
+sudo yum install docker -y\uc0\u8232 \
+3.
+\f0\b Docker \uc0\u49884 \u51089  \u48143  \u48512 \u54021  \u49884  \u51088 \u46041  \u49892 \u54665  \u49444 \u51221 
+\f1\b0 :\
+sudo service docker start\
+sudo systemctl enable docker\
+\
+4.
+\f0\b \uc0\u49324 \u50857 \u51088  \u44428 \u54620  \u48512 \u50668 
+\f1\b0 :\
+sudo usermod -aG docker ec2-user\
+\
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf0 5.\uc0\u47196 \u44536 \u50500 \u50883  \u54980  \u51116 \u51217 \u49549 \
+exit\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\f0\b \cf0 Docker Compose \uc0\u49444 \u52824 \
+\
+1.Docker Compose \uc0\u48148 \u51060 \u45320 \u47532  \u45796 \u50868 \u47196 \u46300 
+\f1\b0 :\
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-aarch64" -o /usr/local/bin/docker-compose\
+\
+2.
+\f0\b \uc0\u49892 \u54665  \u44428 \u54620  \u48512 \u50668 
+\f1\b0 :\
+sudo chmod +x /usr/local/bin/docker-compose\
+\
+3.
+\f0\b \uc0\u49900 \u48380 \u47533  \u47553 \u53356  \u49373 \u49457  (\u49440 \u53469  \u49324 \u54637 )
+\f1\b0 :\
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose\
+\
+4.
+\f0\b Docker Compose \uc0\u48260 \u51204  \u54869 \u51064 
+\f1\b0 :\
+docker --version\
+docker-compose --version\
+\
+Git \uc0\u49444 \u52824 \
+\
+sudo yum install git -y  # Amazon Linux 
+\f2 \'b1\'e2\'c1\'d8}
