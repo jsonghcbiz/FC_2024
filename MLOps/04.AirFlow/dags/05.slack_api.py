@@ -4,6 +4,7 @@ from airflow.utils.dates import days_ago
 import os
 
 os.environ['NO_PROXY'] = '*' # mac에서 airflow로 외부 요청할 때 이슈가 있음. 하여 해당 코드 추가 필요
+# https://stackoverflow.com/questions/76546457/airflow-job-unable-to-send-requests-to-the-internet
 
 dag = DAG(
     dag_id="slack_test",

@@ -1,5 +1,6 @@
 import pandas as pd
 from datetime import datetime 
+import os
 
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
@@ -32,6 +33,7 @@ def train_model(model_name, **context):
     X_train = pd.read_json(ti.xcom_pull(key='X_train'))
     y_train = pd.read_json(ti.xcom_pull(key='y_train'), typ='series')
 
+    # os.makedirs('/tmp', exist_ok=True)
     # 모델 선택
     if model_name == 'RandomForest':
         model = RandomForestClassifier(n_estimators=100, random_state=42)
